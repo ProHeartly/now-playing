@@ -29,6 +29,42 @@ body {
     font-style: normal;
 
     text-align: center;
+    z-index: 0;
 
     transition: color 0.8s ease;
+}
+
+.record {
+    z-index: 1;
+    position: absolute;
+    left: 35%;
+    top: 20%;
+    width: 30%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    
+    background: /* Disc type lookkk*/
+        conic-gradient(from 0deg,
+            transparent 0deg, rgba(255,255,255,.18) 40deg, transparent 90deg,
+            transparent 180deg, rgba(255,255,255,.18) 220deg, transparent 270deg),
+
+        repeating-radial-gradient(circle,
+            rgba(0,0,0,.07) 0 1px, transparent 1px 4px),
+            color-mix(in srgb, var(--text) 30%, var(--bg));
+    
+    animation: spin 8s linear infinite;
+    animation-play-state: paused;
+}
+
+.record.playing {
+    animation-play-state: running;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
