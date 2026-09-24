@@ -2,10 +2,16 @@ const API = "330216c7221b68e42208f36c509eba8b"; // public cuz not even that impo
 const USER = "heartlye"; // my user
 
 
-const trackEl = document.getElementById("track");
+const trackBackEl = document.getElementById("track-back");
+const trackFrontEl = document.getElementById("track-front");
 const recordEl = document.getElementById("record");
 const labelEl = document.getElementById("label");
 let lastTrackKey = "";
+
+function updateTrackText(text) { // small helper function
+    trackBackEl.textContent = text;
+    trackFrontEl.textContent = text;
+}
 
 async function fetchNowPlaying() {
     const url = `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${USER}&api_key=${API}&format=json&limit=1`; // url of the endpoint to be fetched
@@ -37,7 +43,7 @@ async function fetchNowPlaying() {
 }
 
 function setPlaying(track, albumArtUrl) { // changes track to what im playing
-    trackEl.textContent = track;
+    updateTrackText(track);
     
     if (albumArtUrl) {
         labelEl.style.backgroundImage = `url(${albumArtUrl})`;
@@ -54,7 +60,7 @@ function setPlaying(track, albumArtUrl) { // changes track to what im playing
 }
 
 function setIdle() { // sets to idle if I'm not playing anything
-    trackEl.textContent = "not listening to anything (maybe sleeping)";
+    updateTrackText("not listening to anything (maybe sleeping)");
 
     labelEl.style.backgroundImage = "none";
     recordEl.classList.remove("playing");
@@ -62,7 +68,7 @@ function setIdle() { // sets to idle if I'm not playing anything
 }
 
 function setError() { //ERROR thingy
-    trackEl.textContent = "couldn't reach last.fm \n please check :3";
+    updateTrackText("couldn't reach last.fm \n please check :3");
     recordEl.classList.remove("playing");
 }
 

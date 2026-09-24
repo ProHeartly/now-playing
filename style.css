@@ -17,13 +17,14 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
 
     transition: background-color 0.8s ease;
 }
 
 .track {
+    position: absolute;
     font-size: clamp(2rem, 8vw, 10rem);
-    color: var(--text);
     font-family: "Russo One", sans-serif;
     font-weight: 400;
     font-style: normal;
@@ -31,8 +32,20 @@ body {
     text-align: center;
     z-index: 0;
     width: 70vw;
+}
 
+.track-back {
+    z-index: 0;
+    color: var(--text);
     transition: color 0.8s ease;
+}
+
+.track-front {
+    z-index: 2;
+    color: transparent;
+    -webkit-text-stroke: 5px var(--text);
+    opacity: 0.8;
+    transition: -webkit-text-stroke 0.8s ease;
 }
 
 .record {
