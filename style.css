@@ -11,6 +11,7 @@ body {
 .screen {
     height: 100vh;
     width: 100vw;
+    overflow: hidden;
 
     background-color: var(--bg);
 
@@ -20,6 +21,8 @@ body {
     position: relative;
 
     transition: background-color 0.8s ease;
+
+    perspective: 1000px;
 }
 
 .track {
@@ -41,20 +44,30 @@ body {
 }
 
 .track-front {
-    z-index: 2;
+    z-index: 3;
     color: transparent;
     -webkit-text-stroke: 5px var(--text);
     opacity: 0.8;
-    transition: -webkit-text-stroke 0.8s ease;
+    transition: -webkit-text-stroke-color 0.8s ease;
 }
 
-.record {
-    z-index: 1;
+.record-wrapper {
+    z-index: 2;
     position: absolute;
     left: 35%;
     top: 20%;
     width: 30%;
     aspect-ratio: 1;
+    transform-style: preserve-3d;
+}
+
+.record-wrapper.wobble {
+    animation: disc-wobble 0.9s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.record {
+    height: 100%;
+    width: 100%;
     border-radius: 50%;
     
     background: /* Disc type lookkk*/
@@ -74,6 +87,10 @@ body {
     animation-play-state: paused;
 }
 
+.record-wrapper.wobble {
+    animation: disc-wobble 1.5s ease-in-out;
+}
+
 .record .label {
     width: 66%;
     height: 66%;
@@ -86,7 +103,7 @@ body {
 
     box-shadow: inset 0 0 0 4px #111, inset 0 0 0 7px #eee;
 
-    transition: background-image 0.5 ease;
+    transition: background-image 0.5s ease;
 }
 
 .record.playing {
@@ -99,5 +116,20 @@ body {
     }
     to {
         transform: rotate(360deg);
+    }
+}
+
+@keyframes disc-wobble {
+    0% {
+        transform: rotate3d(0, 1, 0, 0deg);
+    }
+    80% {
+        transform: rotate3d(0, 1, 0, 800deg);
+    }
+    90% {
+        transform: rotate3d(0, 1, 0, 680deg);
+    }
+    100% {
+        transform: rotate3d(0, 1, 0, 720deg);
     }
 }

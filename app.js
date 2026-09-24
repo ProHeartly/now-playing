@@ -5,6 +5,7 @@ const USER = "heartlye"; // my user
 const trackBackEl = document.getElementById("track-back");
 const trackFrontEl = document.getElementById("track-front");
 const recordEl = document.getElementById("record");
+const recordWrapperEl = document.getElementById("record-wrapper");
 const labelEl = document.getElementById("label");
 let lastTrackKey = "";
 
@@ -160,8 +161,20 @@ function applyTheme(rgb) {
     const textLightness = l > 55? Math.max(l - 35, 5) : Math.min(l + 35, 95);
     const textColor = `hsl(${h}, ${s}%, ${textLightness}%)`;
 
+
+
+    if (recordWrapperEl) {
+        recordWrapperEl.classList.remove("wobble");
+        void recordWrapperEl.offsetWidth;
+        recordWrapperEl.classList.add("wobble");
+    }
     document.documentElement.style.setProperty("--bg", bgColor);
     document.documentElement.style.setProperty("--text", textColor);
+
+    setTimeout(() => {
+        
+        if (recordWrapperEl) recordWrapperEl.classList.remove("wobble");
+    }, 2000);
 }
 
 fetchNowPlaying();
