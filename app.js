@@ -3,6 +3,8 @@ const USER = "heartlye"; // my user
 
 
 const trackEl = document.getElementById("track");
+const recordEl = document.getElementById("record");
+const labelEl = document.getElementById("label");
 let lastTrackKey = "";
 
 async function fetchNowPlaying() {
@@ -36,6 +38,12 @@ async function fetchNowPlaying() {
 
 function setPlaying(track, albumArtUrl) { // changes track to what im playing
     trackEl.textContent = track;
+    
+    if (albumArtUrl) {
+        labelEl.style.backgroundImage = `url(${albumArtUrl})`;
+    }
+
+    recordEl.classList.add("playing");
 
     if (track === lastTrackKey) return;
     lastTrackKey = track;
@@ -47,10 +55,15 @@ function setPlaying(track, albumArtUrl) { // changes track to what im playing
 
 function setIdle() { // sets to idle if I'm not playing anything
     trackEl.textContent = "not listening to anything (maybe sleeping)";
+
+    labelEl.style.backgroundImage = "none";
+    recordEl.classList.remove("playing");
+    lastTrackKey = "";
 }
 
 function setError() { //ERROR thingy
     trackEl.textContent = "couldn't reach last.fm \n please check :3";
+    recordEl.classList.remove("playing");
 }
 
 
