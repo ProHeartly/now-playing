@@ -2,9 +2,8 @@ const API = "330216c7221b68e42208f36c509eba8b"; // public cuz not even that impo
 const USER = "heartlye"; // my user
 
 
-const statusEl = document.getElementById("status");
 const trackEl = document.getElementById("track");
-const artistEl = document.getElementById("artist");
+let lastTrackKey = "";
 
 async function fetchNowPlaying() {
     const url = `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${USER}&api_key=${API}&format=json&limit=1`; // url of the endpoint to be fetched
@@ -25,7 +24,8 @@ async function fetchNowPlaying() {
         const isNowPlaying = latest["@attr"]?.nowplaying === "true";
 
         if (isNowPlaying) {
-            setPlaying(latest.name, latest.artist["#text"]);
+            const albumArtUrl = latest.image?.find((img) => img.size === "extralarge")?.["#text"] || "";
+            setPlaying(latest.name, albumArtUrl);
         } else {
             setIdle();
         }
@@ -34,22 +34,115 @@ async function fetchNowPlaying() {
     }
 }
 
-function setPlaying(track, artist) { // changes track to what im playing
-    statusEl.textContent = "now playing";
+function setPlaying(track, albumArtUrl) { // changes track to what im playing
     trackEl.textContent = track;
-    artistEl.textContent = artist;
+
+    if (track === lastTrackKey) return;
+    lastTrackKey = track;
+
+    if (albumArtUrl) {
+        getDomColor(albumArtUrl, applyTheme);
+    }
 }
 
 function setIdle() { // sets to idle if I'm not playing anything
-    statusEl.textContent = "not listening to anything (maybe sleeping)";
-    trackEl.textContent = "..silence..";
-    artistEl.textContent = "..world..";
+    trackEl.textContent = "not listening to anything (maybe sleeping)";
 }
 
 function setError() { //ERROR thingy
-    statusEl.textContent = "couldn't reach last.fm";
-    trackEl.textContent = "please check :3";
-    artistEl.textContent = "api";
+    trackEl.textContent = "couldn't reach last.fm \n please check :3";
+}
+
+
+function getDomColor(imageUrl, callback) { // we will get the dominant color in the album to keep as background, given by sum of all / count. :p
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.src = imageUrl;
+
+    img.onload = () => {
+        try {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            canvas.width = img.width;
+            canvas.height = img.height;
+
+            ctx.drawImage(img, 0, 0);
+            const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+            let r = 0, g = 0, b = 0, count = 0;
+
+            for (let i = 0; i < data.length; i += 4) {
+                r += data[i];
+                g += data[i+1];
+                b += data[i+2];
+                count++;
+            }
+
+            callback({
+                r: Math.round( r / count ),
+                g: Math.round( g / count ),
+                b: Math.round( b / count )
+            });
+        } catch (err) {
+            callback({ r: 219, g: 213, b: 181 }); // fallback to original value
+        }
+    };
+
+    img.onerror = () => callback({ r: 219, g: 213, b:181 }); // fallback to original value
+}
+
+function rgbToHsl(r, g, b) {
+    // first of all we goota scale r, g and b values to 0.0 to 1.0
+    r /= 255;
+    g /= 255;
+    b /= 255;
+
+    // we find min, max and difference (also known as delta) value
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const d = max - min;
+
+    // we find lightness(L) : i.e. (max + min) / 2
+    let l = (max + min) / 2;
+
+    // we find saturation(S) : i.e. L <= 0.5 ==> S = d/(max+min)
+    // if L > 0.5 ==> S = d / (2 - min - max)
+    let s = 0;
+    if (d !== 0) {
+        s = l > 0.5 ? d / (2 - min - max): d / (min + max);
+    }
+
+    // we find hue(H) : i.e.
+    // if red is max: H = (g-b)/d + (g<b? 6: 0);
+    // if green is max: (b-r)/d + 4
+    // if blue is max: (r-g)/d + 4
+    let h = 0;
+    if (d !== 0) {
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6: 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6; // normalize da h to 0.0 to 1.0
+    }
+
+    return {
+        h: Math.round(h * 360),
+        s: Math.round(s * 100),
+        l: Math.round(l * 100)
+    };
+}
+
+function applyTheme(rgb) {
+    const { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b);
+
+    const bgColor = `hsl(${h}, ${s}%, ${l}%)`;
+
+    const textLightness = l > 55? Math.max(l - 35, 5) : Math.min(l + 35, 95);
+    const textColor = `hsl(${h}, ${s}%, ${textLightness}%)`;
+
+    document.documentElement.style.setProperty("--bg", bgColor);
+    document.documentElement.style.setProperty("--text", textColor);
 }
 
 fetchNowPlaying();
