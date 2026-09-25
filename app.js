@@ -23,6 +23,42 @@ if (isDemoMode && demoTooltip) { // update the text
     demoTooltip.textContent = "exit demo";
 }
 
+const DEMO_TRACKS = [
+    {
+        name: "Piano Man",
+        artist: "Billy Joel",
+        albumArtUrl: "https://lastfm-img.freetls.fastly.net/i/u/300x300/691231b859b64a80f37eae71d6895ad6.jpg",
+        rgb: { r: 180, g: 140, b: 100 }
+    },
+    {
+        name: "The Arrival",
+        artist: "Yan Qing",
+        albumArtUrl: "https://lastfm-img.freetls.fastly.net/i/u/300x300/b9ff5ac4f00d33d79fddba32ab42f6ad.jpg",
+        rgb: { r: 90, g: 110, b: 95 }
+    },
+    {
+        name: "Let It Happen",
+        artist: "Tame Impala",
+        albumArtUrl: "https://lastfm-img.freetls.fastly.net/i/u/300x300/f8e4c3ec6e2eff4da1c9e42ab5f3e2a7.jpg",
+        rgb: { r: 219, g: 120, b: 120 }
+    }
+];
+
+let demoIndex = 0;
+
+function playNextDemoTrack() {
+    const track = DEMO_TRACKS[demoIndex];
+    currentArtist = track.artist;
+
+    if (sleeveEl) {
+        sleeveEl.style.backgroundImage = track.albumArtUrl ? `url("${track.albumArtUrl}")` : "none";
+    }
+
+    setPlaying(track.name, track.albumArtUrl);
+
+    demoIndex = (demoIndex + 1) % 3
+}
+
 function updateTrackText(text) { // small helper function
     trackBackEl.textContent = text;
     trackFrontEl.textContent = text;
@@ -226,8 +262,21 @@ function djTransition(newTrackName, albumArtUrl, rgb) { // THis will be like new
     }, 2000);
 }
 
-fetchNowPlaying();
-setInterval(fetchNowPlaying, 10000);
+demoBtn.addEventListener("click", () => {
+    if (isDemoMode) {
+        window.location.href = window.location.pathname; // Return to live mode
+    } else {
+        window.location.href = window.location.pathname + "?demo=true"; // Enter thee demo mode
+    }
+});
+
+if (isDemoMode) {
+    playNextDemoTrack();
+    setInterval(playNextDemoTrack, 8000);
+} else {
+    fetchNowPlaying();
+    setInterval(fetchNowPlaying, 10000);
+}
 
 recordEl.addEventListener("click", (e) => { // detail view when clicked in recoardd
     e.stopPropagation(); // Prevents immediate close trigger :D
