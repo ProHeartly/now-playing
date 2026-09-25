@@ -26,10 +26,6 @@ body {
     perspective: 1000px;
 }
 
-.screen.dj {
-    animation: inverted-flash 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
 .track {
     position: absolute;
     font-size: clamp(2rem, 8vw, 10rem);
@@ -72,12 +68,8 @@ body {
     transform-style: preserve-3d;
 }
 
-.record-wrapper.wobble {
+.record.wobble {
     animation: disc-wobble 2s cubic-bezier(1,.51,.65,.88);
-}
-
-.record-wrapper.dj {
-    animation: dj-spin 1.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .record {
@@ -139,38 +131,5 @@ body {
     }
     100% {
         transform: rotate3d(0, 1, 0, 720deg);
-    }
-}
-
-@keyframes inverted-flash {
-    0% {
-        filter: invert(0) contrast(1);
-    }
-    35% {
-        filter: invert(1) contrast(1.4) brightness(1.2);
-    }
-    100% {
-        filter: invert(0) contrast(1);
-    }
-}
-
-@keyframes dj-spin {
-    0% {
-        transform: rotate(0deg);
-    }
-    30% {
-        transform: rotate(-180deg);
-    }
-    40% {
-        transform: rotate(-120deg);
-    }
-    60% {
-        transform: rotate(-360deg);
-    }
-    90% {
-        transform: rotate(60deg);
-    }
-    100% {
-        transform: rotate(0deg);
     }
 }

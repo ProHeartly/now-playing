@@ -157,21 +157,26 @@ function djTransition(newTrackName, albumArtUrl, rgb) { // THis will be like new
     trackBackEl.classList.add("hidden");
     trackFrontEl.classList.add("hidden");
 
-    screenEl.classList.remove("dj");
-    recordWrapperEl.classList.remove("dj");
+    recordEl.classList.remove("wobble");
     
     void screenEl.offsetWidth;
 
-    screenEl.classList.add("dj");
-    recordWrapperEl.classList.add("dj");
+    recordEl.classList.add("wobble");
+
+    const { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b);
+    const isLight = l > 55;
+
+    const oppositeHue = (h + 180) % 360;
+    const oppositeBg = `hsl(${oppositeHue}, ${s}%, ${100 - l}%)`;
+    const oppositeText = `hsl(${oppositeHue}, ${s}%, ${l}%)`;
+
+    document.documentElement.style.setProperty("--bg", oppositeBg);
+    document.documentElement.style.setProperty("--text", oppositeText);
 
     setTimeout(() => {
         if (albumArtUrl) {
             labelEl.style.backgroundImage = `url("${albumArtUrl}")`;
         }
-
-        const { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b);
-        const isLight = l > 55;
 
         const newBgColor = `hsl(${h}, ${s}%, ${l}%)`;
         const textLightness = isLight ? Math.max(l - 35, 5) : Math.min(l + 35, 95);
@@ -193,9 +198,8 @@ function djTransition(newTrackName, albumArtUrl, rgb) { // THis will be like new
     }, 800);
 
     setTimeout(() => {
-        screenEl.classList.remove("dj");
-        recordWrapperEl.classList.remove("dj");
-    }, 1200);
+        recordEl.classList.remove("wobble");
+    }, 2000);
 }
 
 fetchNowPlaying();
