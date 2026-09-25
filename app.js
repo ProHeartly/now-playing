@@ -9,10 +9,19 @@ const trackFrontEl = document.getElementById("track-front");
 const recordEl = document.getElementById("record");
 const recordWrapperEl = document.getElementById("record-wrapper");
 const labelEl = document.getElementById("label");
+const demoBtn = document.getElementById("demo");
+const demoTooltip = document.getElementById("demo-tooltip");
 let lastTrackKey = "";
 let currentArtist = "";
 let isDetailView = false;
 
+// for demo thingy
+const urlParams = new URLSearchParams(window.location.search);
+const isDemoMode = urlParams.get("demo") === "true";
+
+if (isDemoMode && demoTooltip) { // update the text
+    demoTooltip.textContent = "exit demo";
+}
 
 function updateTrackText(text) { // small helper function
     trackBackEl.textContent = text;
@@ -164,6 +173,11 @@ function rgbToHsl(r, g, b) {
 }
 
 function djTransition(newTrackName, albumArtUrl, rgb) { // THis will be like new transition between new song :p
+    if (isDetailView) {
+        isDetailView = false;
+        toggleDetailView(false);
+    }
+
     trackBackEl.classList.add("hidden");
     trackFrontEl.classList.add("hidden");
 
