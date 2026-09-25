@@ -1,7 +1,8 @@
 const API = "330216c7221b68e42208f36c509eba8b"; // public cuz not even that important dwww
 const USER = "heartlye"; // my user
 
-
+const artistEl = document.getElementById("artist-text");
+const sleeveEl = document.getElementById("sleeve");
 const screenEl = document.querySelector(".screen");
 const trackBackEl = document.getElementById("track-back");
 const trackFrontEl = document.getElementById("track-front");
@@ -9,6 +10,9 @@ const recordEl = document.getElementById("record");
 const recordWrapperEl = document.getElementById("record-wrapper");
 const labelEl = document.getElementById("label");
 let lastTrackKey = "";
+let currentArtist = "";
+let isDetailView = false;
+
 
 function updateTrackText(text) { // small helper function
     trackBackEl.textContent = text;
@@ -35,6 +39,12 @@ async function fetchNowPlaying() {
 
         if (isNowPlaying) {
             const albumArtUrl = latest.image?.find((img) => img.size === "extralarge")?.["#text"] || "";
+
+            currentArtist = latest.artist?.["#text"] || "";
+            if (sleeveEl && albumArtUrl) {
+                sleeveEl.style.backgroundImage = `url("${albumArtUrl}")`;
+            }
+
             setPlaying(latest.name, albumArtUrl);
         } else {
             setIdle();
@@ -189,7 +199,7 @@ function djTransition(newTrackName, albumArtUrl, rgb) { // THis will be like new
         document.documentElement.style.setProperty("--bg", newBgColor);
         document.documentElement.style.setProperty("--text", newTextColor);
         document.documentElement.style.setProperty("--disc", newDiscColor);
-    }, 400);
+    }, 1000);
 
     setTimeout(() => {
         updateTrackText(newTrackName);
@@ -204,3 +214,29 @@ function djTransition(newTrackName, albumArtUrl, rgb) { // THis will be like new
 
 fetchNowPlaying();
 setInterval(fetchNowPlaying, 10000);
+
+recordEl.addEventListener("click", (e) => { // detail view when clicked in recoardd
+    e.stopPropagation(); // Prevents immediate close trigger :D
+    if (!lastTrackKey) return;
+
+    isDetailView = !isDetailView;
+    toggleDetailView(isDetailView);
+});
+
+screenEl.addEventListener("click", () => { // click anywhere in the screen to close the detailed view
+    if (isDetailView) {
+        isDetailView = false;
+        toggleDetailView(false);
+    }
+});
+
+function toggleDetailView(active) {
+    if (active) {
+        artistEl.textContent = currentArtist;
+        screenEl.classList.add("active");
+        artistEl.classList.remove("hidden");
+    } else {
+        screenEl.classList.remove("active");
+        artistEl.classList.add("hidden");
+    }
+}
