@@ -2,6 +2,7 @@ const API = "330216c7221b68e42208f36c509eba8b"; // public cuz not even that impo
 const USER = "heartlye"; // my user
 
 
+const screenEl = document.querySelector(".screen");
 const trackBackEl = document.getElementById("track-back");
 const trackFrontEl = document.getElementById("track-front");
 const recordEl = document.getElementById("record");
@@ -44,19 +45,17 @@ async function fetchNowPlaying() {
 }
 
 function setPlaying(track, albumArtUrl) { // changes track to what im playing
-    updateTrackText(track);
-    
-    if (albumArtUrl) {
-        labelEl.style.backgroundImage = `url(${albumArtUrl})`;
-    }
-
-    recordEl.classList.add("playing");
-
     if (track === lastTrackKey) return;
     lastTrackKey = track;
 
+    recordEl.classList.add("playing");
+
     if (albumArtUrl) {
-        getDomColor(albumArtUrl, applyTheme);
+        getDomColor(albumArtUrl, (rgb) => {
+            djTransition(track, albumArtUrl, rgb);
+        });
+    } else {
+        djTransition(track, "", { r: 219, g: 213, b: 181 });
     }
 }
 
@@ -71,6 +70,7 @@ function setIdle() { // sets to idle if I'm not playing anything
 function setError() { //ERROR thingy
     updateTrackText("couldn't reach last.fm \n please check :3");
     recordEl.classList.remove("playing");
+    lastTrackKey = "";
 }
 
 
@@ -153,29 +153,50 @@ function rgbToHsl(r, g, b) {
     };
 }
 
-function applyTheme(rgb) {
-    const { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b);
+function djTransition(newTrackName, albumArtUrl, rgb) { // THis will be like new transition between new song :p
+    trackBackEl.classList.add("hidden");
+    trackFrontEl.classList.add("hidden");
 
-    const bgColor = `hsl(${h}, ${s}%, ${l}%)`;
+    screenEl.classList.remove("dj");
+    recordWrapperEl.classList.remove("dj");
+    
+    void screenEl.offsetWidth;
 
-    const textLightness = l > 55? Math.max(l - 35, 5) : Math.min(l + 35, 95);
-    const textColor = `hsl(${h}, ${s}%, ${textLightness}%)`;
-
-
-
-    if (recordWrapperEl) {
-        recordWrapperEl.classList.remove("wobble");
-        void recordWrapperEl.offsetWidth;
-        recordWrapperEl.classList.add("wobble");
-    }
-    document.documentElement.style.setProperty("--bg", bgColor);
-    document.documentElement.style.setProperty("--text", textColor);
+    screenEl.classList.add("dj");
+    recordWrapperEl.classList.add("dj");
 
     setTimeout(() => {
-        
-        if (recordWrapperEl) recordWrapperEl.classList.remove("wobble");
-    }, 2000);
+        if (albumArtUrl) {
+            labelEl.style.backgroundImage = `url("${albumArtUrl}")`;
+        }
+
+        const { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b);
+        const isLight = l > 55;
+
+        const newBgColor = `hsl(${h}, ${s}%, ${l}%)`;
+        const textLightness = isLight ? Math.max(l - 35, 5) : Math.min(l + 35, 95);
+        const newTextColor = `hsl(${h}, ${s}%, ${textLightness}%)`;
+
+        const discS = Math.min(100, s * 1.2 + 5);
+        const discL = isLight ? Math.max(l - 16, 8) : Math.min(l + 16, 92);
+        const newDiscColor = `hsl(${h}, ${discS}%, ${discL}%)`;
+
+        document.documentElement.style.setProperty("--bg", newBgColor);
+        document.documentElement.style.setProperty("--text", newTextColor);
+        document.documentElement.style.setProperty("--disc", newDiscColor);
+    }, 400);
+
+    setTimeout(() => {
+        updateTrackText(newTrackName);
+        trackBackEl.classList.remove("hidden");
+        trackFrontEl.classList.remove("hidden");
+    }, 800);
+
+    setTimeout(() => {
+        screenEl.classList.remove("dj");
+        recordWrapperEl.classList.remove("dj");
+    }, 1200);
 }
 
 fetchNowPlaying();
-setInterval(fetchNowPlaying, 10000) // every 10 sec
+setInterval(fetchNowPlaying, 10000);

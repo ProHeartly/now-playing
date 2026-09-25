@@ -1,3 +1,6 @@
 # now-playing
 
-simply a site which shows cool things (not decided till now) when im playing a music in yt music :p
+simply a site which shows a asthetic disc with the song's album when im playing a music in yt music :p
+also the background of the web changes with the music's album theme :D
+
+and some cool loading animation as the disc rotates when 
