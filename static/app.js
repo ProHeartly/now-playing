@@ -50,9 +50,9 @@ function playNextDemoTrack() {
     const track = DEMO_TRACKS[demoIndex];
     currentArtist = track.artist;
 
-    if (sleeveEl) {
-        sleeveEl.style.backgroundImage = track.albumArtUrl ? `url("${track.albumArtUrl}")` : "none";
-    }
+    // if (sleeveEl) {
+    //     sleeveEl.style.backgroundImage = track.albumArtUrl ? `url("${track.albumArtUrl}")` : "none";
+    // }
 
     setPlaying(track.name, track.albumArtUrl);
 
@@ -86,9 +86,9 @@ async function fetchNowPlaying() {
             const albumArtUrl = latest.image?.find((img) => img.size === "extralarge")?.["#text"] || "";
 
             currentArtist = latest.artist?.["#text"] || "";
-            if (sleeveEl && albumArtUrl) {
-                sleeveEl.style.backgroundImage = `url("${albumArtUrl}")`;
-            }
+            // if (sleeveEl && albumArtUrl) {
+            //     sleeveEl.style.backgroundImage = `url("${albumArtUrl}")`;
+            // }
 
             setPlaying(latest.name, albumArtUrl);
         } else {
@@ -221,62 +221,72 @@ function rgbToHsl(r, g, b) {
     };
 }
 
+
+let pendingTransitionTime = null; // to track if there is transition
+
 function djTransition(newTrackName, albumArtUrl, rgb) { // THis will be like new transition between new song :p
+    clearTimeout(pendingTransitionTime);
+
+    const startNewSong = () => {
+        const { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b);
+        const isLight = l > 55;
+
+        const newBgColor = `hsl(${h}, ${s}%, ${l}%)`;
+        const textLightness = isLight ? Math.max(l - 35, 5) : Math.min(l + 35, 95);
+        const newTextColor = `hsl(${h}, ${s}%, ${textLightness}%)`;
+
+        const discS = Math.min(100, s * 1.2 + 5);
+        const discL = isLight ? Math.max(l - 16, 8) : Math.min(l + 16, 92);
+        const newDiscColor = `hsl(${h}, ${discS}%, ${discL}%)`;
+
+        const apply = () => {
+            document.documentElement.style.setProperty("--bg", newBgColor);
+            document.documentElement.style.setProperty("--text", newTextColor);
+            document.documentElement.style.setProperty("--disc", newDiscColor);
+
+            if (albumArtUrl) {
+                labelEl.style.backgroundImage = `url("${albumArtUrl}")`;
+            } else {
+                labelEl.style.backgroundImage = "none";
+            }
+
+            updateTrackText(newTrackName);
+            trackBackEl.classList.remove("hidden");
+            trackFrontEl.classList.remove("hidden");
+        };
+        recordEl.classList.remove("wobble");
+        void screenEl.offsetWidth;
+        recordEl.classList.add("wobble");
+
+        if (document.startViewTransition) {
+            const t = document.startViewTransition(apply);
+            t.ready.then(() => {
+                const r = recordEl.getBoundingClientRect();
+                const x = r.left + r.width / 2;
+                const y = r.top  + r.height / 2;
+                const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+
+                document.documentElement.animate(
+                    { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+                    {
+                        duration: 2400,
+                        easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+                        pseudoElement: "::view-transition-new(root)"
+                    }
+                );
+            });
+        } else {
+            apply();
+        }
+    };
+    
+    
     if (isDetailView) {
         isDetailView = false;
         toggleDetailView(false);
-    }
-
-    const { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b);
-    const isLight = l > 55;
-
-    const newBgColor = `hsl(${h}, ${s}%, ${l}%)`;
-    const textLightness = isLight ? Math.max(l - 35, 5) : Math.min(l + 35, 95);
-    const newTextColor = `hsl(${h}, ${s}%, ${textLightness}%)`;
-
-    const discS = Math.min(100, s * 1.2 + 5);
-    const discL = isLight ? Math.max(l - 16, 8) : Math.min(l + 16, 92);
-    const newDiscColor = `hsl(${h}, ${discS}%, ${discL}%)`;
-
-    const apply = () => {
-        document.documentElement.style.setProperty("--bg", newBgColor);
-        document.documentElement.style.setProperty("--text", newTextColor);
-        document.documentElement.style.setProperty("--disc", newDiscColor);
-
-        if (albumArtUrl) {
-            labelEl.style.backgroundImage = `url("${albumArtUrl}")`;
-        } else {
-            labelEl.style.backgroundImage = "none";
-        }
-
-        updateTrackText(newTrackName);
-        trackBackEl.classList.remove("hidden");
-        trackFrontEl.classList.remove("hidden");
-    };
-
-    recordEl.classList.remove("wobble");
-    void screenEl.offsetWidth;
-    recordEl.classList.add("wobble");
-
-    if (document.startViewTransition) {
-        const t = document.startViewTransition(apply);
-        t.ready.then(() => {
-            const r = recordEl.getBoundingClientRect();
-            const x = r.left + r.width / 2;
-            const y = r.top  + r.height / 2;
-            const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
-
-            document.documentElement.animate(
-                { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
-                {
-                    duration: 2400,
-                    easing: "cubic-bezier(0.4, 0, 0.2, 1)",
-                    pseudoElement: "::view-transition-new(root)"
-                }
-            );
-        });
+        pendingTransitionTime = setTimeout(startNewSong, 800);
     } else {
-        apply();
+        startNewSong();
     }
 }
 
