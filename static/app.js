@@ -115,6 +115,19 @@ function setPlaying(track, albumArtUrl) { // changes track to what im playing
 }
 
 function setIdle() { // sets to idle if I'm not playing anything
+    if (lastTrackKey === "" && trackBackEl.textContent === "not listening to anything (maybe sleeping)") {
+        return;
+    }
+
+    if (isDetailView) {
+        isDetailView = false;
+        toggleDetailView(false);
+    }
+
+    document.documentElement.style.setProperty("--bg", "#EFECE6");
+    document.documentElement.style.setProperty("--text", "#D63230");
+    document.documentElement.style.setProperty("--disc", "#141414");
+
     updateTrackText("not listening to anything (maybe sleeping)");
 
     labelEl.style.backgroundImage = "none";
@@ -297,6 +310,12 @@ screenEl.addEventListener("click", () => { // click anywhere in the screen to cl
         toggleDetailView(false);
     }
 });
+
+recordEl.addEventListener("animationend", (e) => {
+    if (e.animationName === "disc-wobble") {
+        recordEl.classList.remove("wobble");
+    }    
+})
 
 function toggleDetailView(active) {
     if (active) {
