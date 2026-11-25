@@ -4,6 +4,12 @@
     --disc: #141414;
 }
 
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -20,8 +26,6 @@ body {
     justify-content: center;
     align-items: center;
     position: relative;
-
-    transition: background-color 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 
     perspective: 1000px;
 }
@@ -99,13 +103,12 @@ body {
     margin: auto;
     width: min(32vw, 48vh);
     height: min(32vw, 48vh);
-    transform-style: preserve-3d;
 
     transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .record.wobble {
-    animation: disc-wobble 2s cubic-bezier(1,.51,.65,.88);
+    animation: disc-wobble 2.4s cubic-bezier(1,.51,.65,.88);
 }
 
 .record {
@@ -259,13 +262,13 @@ body {
 
 @keyframes disc-wobble {
     0% {
-        transform: rotate3d(0, 1, 0, 0deg);
+        transform: perspective(1000px) rotate3d(0, 1, 0, 0deg);
     }
     90% {
-        transform: rotate3d(0, 1, 0, 740deg);
+        transform: perspective(1000px) rotate3d(0, 1, 0, 740deg);
     }
     100% {
-        transform: rotate3d(0, 1, 0, 720deg);
+        transform: perspective(1000px) rotate3d(0, 1, 0, 720deg);
     }
 }
 

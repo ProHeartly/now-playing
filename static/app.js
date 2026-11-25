@@ -214,52 +214,57 @@ function djTransition(newTrackName, albumArtUrl, rgb) { // THis will be like new
         toggleDetailView(false);
     }
 
-    trackBackEl.classList.add("hidden");
-    trackFrontEl.classList.add("hidden");
-
-    recordEl.classList.remove("wobble");
-    
-    void screenEl.offsetWidth;
-
-    recordEl.classList.add("wobble");
-
     const { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b);
     const isLight = l > 55;
 
-    const oppositeHue = (h + 180) % 360;
-    const oppositeBg = `hsl(${oppositeHue}, ${s}%, ${100 - l}%)`;
-    const oppositeText = `hsl(${oppositeHue}, ${s}%, ${l}%)`;
+    const newBgColor = `hsl(${h}, ${s}%, ${l}%)`;
+    const textLightness = isLight ? Math.max(l - 35, 5) : Math.min(l + 35, 95);
+    const newTextColor = `hsl(${h}, ${s}%, ${textLightness}%)`;
 
-    document.documentElement.style.setProperty("--bg", oppositeBg);
-    document.documentElement.style.setProperty("--text", oppositeText);
+    const discS = Math.min(100, s * 1.2 + 5);
+    const discL = isLight ? Math.max(l - 16, 8) : Math.min(l + 16, 92);
+    const newDiscColor = `hsl(${h}, ${discS}%, ${discL}%)`;
 
-    setTimeout(() => {
-        if (albumArtUrl) {
-            labelEl.style.backgroundImage = `url("${albumArtUrl}")`;
-        }
-
-        const newBgColor = `hsl(${h}, ${s}%, ${l}%)`;
-        const textLightness = isLight ? Math.max(l - 35, 5) : Math.min(l + 35, 95);
-        const newTextColor = `hsl(${h}, ${s}%, ${textLightness}%)`;
-
-        const discS = Math.min(100, s * 1.2 + 5);
-        const discL = isLight ? Math.max(l - 16, 8) : Math.min(l + 16, 92);
-        const newDiscColor = `hsl(${h}, ${discS}%, ${discL}%)`;
-
+    const apply = () => {
         document.documentElement.style.setProperty("--bg", newBgColor);
         document.documentElement.style.setProperty("--text", newTextColor);
         document.documentElement.style.setProperty("--disc", newDiscColor);
-    }, 1000);
 
-    setTimeout(() => {
+        if (albumArtUrl) {
+            labelEl.style.backgroundImage = `url("${albumArtUrl}")`;
+        } else {
+            labelEl.style.backgroundImage = "none";
+        }
+
         updateTrackText(newTrackName);
         trackBackEl.classList.remove("hidden");
         trackFrontEl.classList.remove("hidden");
-    }, 800);
+    };
 
-    setTimeout(() => {
-        recordEl.classList.remove("wobble");
-    }, 2000);
+    recordEl.classList.remove("wobble");
+    void screenEl.offsetWidth;
+    recordEl.classList.add("wobble");
+
+    if (document.startViewTransition) {
+        const t = document.startViewTransition(apply);
+        t.ready.then(() => {
+            const r = recordEl.getBoundingClientRect();
+            const x = r.left + r.width / 2;
+            const y = r.top  + r.height / 2;
+            const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+
+            document.documentElement.animate(
+                { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+                {
+                    duration: 2400,
+                    easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+                    pseudoElement: "::view-transition-new(root)"
+                }
+            );
+        });
+    } else {
+        apply();
+    }
 }
 
 demoBtn.addEventListener("click", () => {
