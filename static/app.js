@@ -1,5 +1,9 @@
 const API = "330216c7221b68e42208f36c509eba8b"; // public cuz not even that important dwww
-const USER = "heartlye"; // my user
+
+const urlParams = new URLSearchParams(window.location.search);
+const currentUser = urlParams.get("user") || document.body.dataset.user || "heartlye";
+
+document.title = `now playing - @${currentUser}`
 
 const artistEl = document.getElementById("artist-text");
 const sleeveEl = document.getElementById("sleeve");
@@ -9,55 +13,55 @@ const trackFrontEl = document.getElementById("track-front");
 const recordEl = document.getElementById("record");
 const recordWrapperEl = document.getElementById("record-wrapper");
 const labelEl = document.getElementById("label");
-const demoBtn = document.getElementById("demo");
-const demoTooltip = document.getElementById("demo-tooltip");
+// const demoBtn = document.getElementById("demo");
+// const demoTooltip = document.getElementById("demo-tooltip");
 let lastTrackKey = "";
 let currentArtist = "";
 let isDetailView = false;
 
-// for demo thingy
-const urlParams = new URLSearchParams(window.location.search);
-const isDemoMode = urlParams.get("demo") === "true";
+// // for demo thingy
+// const urlParams = new URLSearchParams(window.location.search);
+// const isDemoMode = urlParams.get("demo") === "true";
 
-if (isDemoMode && demoTooltip) { // update the text
-    demoTooltip.textContent = "exit demo";
-}
+// if (isDemoMode && demoTooltip) { // update the text
+//     demoTooltip.textContent = "exit demo";
+// }
 
-const DEMO_TRACKS = [
-    {
-        name: "Piano Man",
-        artist: "Billy Joel",
-        albumArtUrl: "https://lastfm-img.freetls.fastly.net/i/u/300x300/691231b859b64a80f37eae71d6895ad6.jpg",
-        rgb: { r: 180, g: 140, b: 100 }
-    },
-    {
-        name: "The Arrival",
-        artist: "Yan Qing",
-        albumArtUrl: "https://lastfm-img.freetls.fastly.net/i/u/300x300/b9ff5ac4f00d33d79fddba32ab42f6ad.jpg",
-        rgb: { r: 90, g: 110, b: 95 }
-    },
-    {
-        name: "Let It Happen",
-        artist: "Tame Impala",
-        albumArtUrl: "https://lastfm-img.freetls.fastly.net/i/u/300x300/f8e4c3ec6e2eff4da1c9e42ab5f3e2a7.jpg",
-        rgb: { r: 219, g: 120, b: 120 }
-    }
-];
+// const DEMO_TRACKS = [
+//     {
+//         name: "Piano Man",
+//         artist: "Billy Joel",
+//         albumArtUrl: "https://lastfm-img.freetls.fastly.net/i/u/300x300/691231b859b64a80f37eae71d6895ad6.jpg",
+//         rgb: { r: 180, g: 140, b: 100 }
+//     },
+//     {
+//         name: "The Arrival",
+//         artist: "Yan Qing",
+//         albumArtUrl: "https://lastfm-img.freetls.fastly.net/i/u/300x300/b9ff5ac4f00d33d79fddba32ab42f6ad.jpg",
+//         rgb: { r: 90, g: 110, b: 95 }
+//     },
+//     {
+//         name: "Let It Happen",
+//         artist: "Tame Impala",
+//         albumArtUrl: "https://lastfm-img.freetls.fastly.net/i/u/300x300/f8e4c3ec6e2eff4da1c9e42ab5f3e2a7.jpg",
+//         rgb: { r: 219, g: 120, b: 120 }
+//     }
+// ];
 
-let demoIndex = 0;
+// let demoIndex = 0;
 
-function playNextDemoTrack() {
-    const track = DEMO_TRACKS[demoIndex];
-    currentArtist = track.artist;
+// function playNextDemoTrack() {
+//     const track = DEMO_TRACKS[demoIndex];
+//     currentArtist = track.artist;
 
-    // if (sleeveEl) {
-    //     sleeveEl.style.backgroundImage = track.albumArtUrl ? `url("${track.albumArtUrl}")` : "none";
-    // }
+//     // if (sleeveEl) {
+//     //     sleeveEl.style.backgroundImage = track.albumArtUrl ? `url("${track.albumArtUrl}")` : "none";
+//     // }
 
-    setPlaying(track.name, track.albumArtUrl);
+//     setPlaying(track.name, track.albumArtUrl);
 
-    demoIndex = (demoIndex + 1) % 3
-}
+//     demoIndex = (demoIndex + 1) % 3
+// }
 
 function updateTrackText(text) { // small helper function
     trackBackEl.textContent = text;
@@ -65,11 +69,23 @@ function updateTrackText(text) { // small helper function
 }
 
 async function fetchNowPlaying() {
-    const url = `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${USER}&api_key=${API}&format=json&limit=1`; // url of the endpoint to be fetched
+    const url = `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${encodeURIComponent(currentUser)}&api_key=${API}&format=json&limit=1`; // url of the endpoint to be fetched
 
     try {
         const res = await fetch(url);
         const data = await res.json();
+
+        if (data.error === 6) {
+            if (isDetailView) {
+                isDetailView = false;
+                toggleDetailView(false);
+            }
+
+            updateTrackText(`user "@${currentUser}" not found`);
+            recordEl.classList.remove("playing");
+            lastTrackKey = "";
+            return;
+        }
 
         // response eg: {"recenttracks":{"track":[{"artist":{"mbid":"f149ef8c-9acb-4335-bb1a-aee1fe74c733","#text":"Yan Qing"},"streamable":"0","image":[{"size":"small","#text":"https:\/\/lastfm-img.freetls.fastly.net\/i\/u\/34s\/b9ff5ac4f00d33d79fddba32ab42f6ad.jpg"},{"size":"medium","#text":"https:\/\/lastfm-img.freetls.fastly.net\/i\/u\/64s\/b9ff5ac4f00d33d79fddba32ab42f6ad.jpg"},{"size":"large","#text":"https:\/\/lastfm-img.freetls.fastly.net\/i\/u\/174s\/b9ff5ac4f00d33d79fddba32ab42f6ad.jpg"},{"size":"extralarge","#text":"https:\/\/lastfm-img.freetls.fastly.net\/i\/u\/300x300\/b9ff5ac4f00d33d79fddba32ab42f6ad.jpg"}],"mbid":"","album":{"mbid":"6f256965-7b36-40ae-97af-4b6fc454b562","#text":"The Arrival"},"name":"The Arrival","@attr":{"nowplaying":"true"},"url":"https:\/\/www.last.fm\/music\/Yan+Qing\/_\/The+Arrival"},{"artist":{"mbid":"64b94289-9474-4d43-8c93-918ccc1920d1","#text":"Billy Joel"},"streamable":"0","image":[{"size":"small","#text":"https:\/\/lastfm-img.freetls.fastly.net\/i\/u\/34s\/691231b859b64a80f37eae71d6895ad6.jpg"},{"size":"medium","#text":"https:\/\/lastfm-img.freetls.fastly.net\/i\/u\/64s\/691231b859b64a80f37eae71d6895ad6.jpg"},{"size":"large","#text":"https:\/\/lastfm-img.freetls.fastly.net\/i\/u\/174s\/691231b859b64a80f37eae71d6895ad6.jpg"},{"size":"extralarge","#text":"https:\/\/lastfm-img.freetls.fastly.net\/i\/u\/300x300\/691231b859b64a80f37eae71d6895ad6.jpg"}],"mbid":"","album":{"mbid":"","#text":"And so it goes"},"name":"Piano Man (The Old Grey Whistle Test)","url":"https:\/\/www.last.fm\/music\/Billy+Joel\/_\/Piano+Man+(The+Old+Grey+Whistle+Test)","date":{"uts":"1790131781","#text":"23 Sep 2026, 02:49"}}],"@attr":{"user":"heartlye","totalPages":"8","page":"1","perPage":"1","total":"8"}}}
 
@@ -288,21 +304,24 @@ function djTransition(newTrackName, albumArtUrl, rgb) { // THis will be like new
     }
 }
 
-demoBtn.addEventListener("click", () => {
-    if (isDemoMode) {
-        window.location.href = window.location.pathname; // Return to live mode
-    } else {
-        window.location.href = window.location.pathname + "?demo=true"; // Enter thee demo mode
-    }
-});
+// demoBtn.addEventListener("click", () => {
+//     if (isDemoMode) {
+//         window.location.href = window.location.pathname; // Return to live mode
+//     } else {
+//         window.location.href = window.location.pathname + "?demo=true"; // Enter thee demo mode
+//     }
+// });
 
-if (isDemoMode) {
-    playNextDemoTrack();
-    setInterval(playNextDemoTrack, 8000);
-} else {
-    fetchNowPlaying();
-    setInterval(fetchNowPlaying, 10000);
-}
+// if (isDemoMode) {
+//     playNextDemoTrack();
+//     setInterval(playNextDemoTrack, 8000);
+// } else {
+//     fetchNowPlaying();
+//     setInterval(fetchNowPlaying, 10000);
+// }
+
+fetchNowPlaying();
+setInterval(fetchNowPlaying, 10000);
 
 recordEl.addEventListener("click", (e) => { // detail view when clicked in recoardd
     e.stopPropagation(); // Prevents immediate close trigger :D

@@ -221,7 +221,7 @@ body {
     opacity: 0;
 }
 
-.demo {
+/* .demo {
     position: absolute;
     top: 24px;
     right: 24px;
@@ -268,7 +268,7 @@ body {
 .demo:hover .demo-tooltip {
     opacity: 1;
     transform: translateX(0);
-}
+} */
 
 @keyframes spin {
     from {
