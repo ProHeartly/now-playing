@@ -268,3 +268,37 @@ body {
         transform: rotate3d(0, 1, 0, 720deg);
     }
 }
+
+@media (max-width: 768px) {
+    .record-wrapper {
+        width: 58vw;
+        height: 58vw;
+    }
+
+    .screen.active .record-wrapper {
+        transform: translateX(8vw) translateY(15vh);
+    }
+
+    .screen.active .sleeve {
+        transform: translateX(-24%);
+    }
+
+    .screen.active .track {
+        left: 7vw;
+        width: 86vw;
+        font-size: clamp(2rem, 7vw, 3rem);
+        transform: translateY(-27vh);
+    }
+
+    .artist-text {
+        left: 7vw;
+        width: 86vw;
+
+        font-size: clamp(1rem, 4vw, 2rem);
+        transform: translateY(-19vh);
+    }
+
+    .artist-text.hidden {
+        transform: translateX(-100vw) translateY(-19vh);
+    }
+}
