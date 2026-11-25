@@ -244,11 +244,9 @@ function djTransition(newTrackName, albumArtUrl, rgb) { // THis will be like new
             document.documentElement.style.setProperty("--text", newTextColor);
             document.documentElement.style.setProperty("--disc", newDiscColor);
 
-            if (albumArtUrl) {
-                labelEl.style.backgroundImage = `url("${albumArtUrl}")`;
-            } else {
-                labelEl.style.backgroundImage = "none";
-            }
+            const artCss = albumArtUrl ? `url("${albumArtUrl}")` : "none";
+            labelEl.style.backgroundImage = artCss;
+            if (sleeveEl) sleeveEl.style.backgroundImage = artCss;
 
             updateTrackText(newTrackName);
             trackBackEl.classList.remove("hidden");
