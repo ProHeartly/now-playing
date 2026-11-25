@@ -88,14 +88,14 @@ body {
 }
 
 .screen.active .track-front {
-    -webkit-text-stroke-color: color-mix(in srgb, var(--disc) 28%, #ffffff);
+    opacity: 0;
 }
 
 .screen.active .track {
     left: 7vw;
     width: 44vw;
     top: auto;
-    bottom: 51%;
+    bottom: calc(50% + 0.4rem);
     text-align: left;
     font-size: clamp(2rem, 5vw, 6rem);
     transform: none;
