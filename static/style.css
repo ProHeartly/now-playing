@@ -10,6 +10,22 @@
     mix-blend-mode: normal;
 }
 
+::view-transition-group(root) {
+    z-index: 1;
+}
+
+::view-transition-group(track-back) {
+    z-index: 2;
+}
+
+::view-transition-group(vinyl) {
+    z-index: 3;
+}
+
+::view-transition-group(track-front) {
+    z-index: 4;
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -62,6 +78,7 @@ body {
 }
 
 .track-back {
+    view-transition-name: track-back;
     z-index: 0;
     color: var(--text);
 }
@@ -85,6 +102,7 @@ body {
 }
 
 .track-front {
+    view-transition-name: track-front;
     z-index: 4;
     color: transparent;
     -webkit-text-stroke: 5px var(--text);
@@ -97,6 +115,7 @@ body {
 }
 
 .record-wrapper {
+    view-transition-name: vinyl;
     z-index: 3;
     position: absolute;
     inset: 0;
